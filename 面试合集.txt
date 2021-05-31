@@ -1,0 +1,494 @@
+1.vue 生命周期对应什么时候会走，哪些生命周期呢
+```
+beforeCreate
+created
+beforeMount
+mounted
+beforeUpdate
+updated
+beforeDestroy
+destroyed
+
+beforeDestroy钩子函数在实例销毁之前调用。在这一步，实例仍然完全可用。
+destroyed钩子函数在Vue 实例销毁后调用。调用后，Vue 实例指示的所有东西都会解绑定，所有的事件监听器会被移除，所有的子实例也会被销毁。
+```
+![image.png](https://upload-images.jianshu.io/upload_images/2631509-bc6a11b82dcaa52e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+
+![image.png](https://upload-images.jianshu.io/upload_images/2631509-0fe75602ebfb1479.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+
+
+
+2.NSNotification和delegate的使用场景
+
+```
+Delegate
+
+在学习iOS开发时，我们最常用的应该就是委托模式了，UITableView、UICollectionView等等，委托模式提供了两种实现方式，一种是事件的代理，一种是数据源的代理，我们可以通知委托对象针对相关事件进行响应，也可以从委托对象获取想要的数据，委托模式基于协议protocol实现，提供了一种规范化的实现方式，并且delegate是一种一对一的实现方式，其优点有:
+
+基于协议实现，提供了规范化的实现方法
+在编译期就能够检查是否实现了代理必须实现的方法
+提供事件响应的代理模式
+提供数据源的代理模式
+即时没有委托对象也不会产生异常
+其缺点有:
+
+规范化带来了实现上的复杂，必须遵守协议并实现所有方法
+只能实现一对一的通信，如果多个对象都委托同一代理，为了区分不同的被委托对象，造成代码的复杂化
+
+```
+
+```
+NSNotificationCenter
+
+NSNotificationCenter通知中心提供了一种多对一的通信方式，与KVO相同，多个监听器对象可以同时监听同一通知，能够提供低耦合的实现方式，监听器对象可以接收到通知的信息，但发送通知的对象实现了隐藏，无法得知具体的发送对象，iOS中很多系统控件都会发送相关通知，最常见的如键盘，包括应用程序的状态等，其优点有:
+
+创建通知的监听器简单，只需注册后实现监听放法即可
+能够实现多对一的监听
+通过NSNotification的userInfo能够传递通知的信息
+iOS9以后不需要手动删除监听器对象也不会产生异常
+其缺点有:
+
+通知名称使用字符串类型，在编译器无法检查
+参数传递使用userInfo字典类型，参数获取需要规范定义
+不能获取发送通知对象的状态信息
+总结
+
+从上面的优缺点分析来看，三种方法都有各自的优缺点，因此，没有正确与否，只有适不适合我们的需求，我在开发中使用较多的是delegate和KVO，但KVO的使用过多后就会发现有些滥用，在某些情况下NSNotificationCenter更加适合，并且KVO在使用时必须非常小心的注册和删除监听器。
+```
+
+
+
+
+3. NSUserDefaults存储的数据格式,存储在什么地方 并且NSUserDefaults的安全性如何
+```
+NSUserDefaults存储在Library/Preference文件中，存储的文件形式是plist文件
+
+数据量一大读取成本就高，敏感数据容易被破解，因为实际上是明文存在 plist 中的，所以建议用户安全相关的（如 token）尽量不要放在 UserDefault 中，即使要存也最好做一次加密再存，最好的方式是存在 Keychain 中。UserDefault 更适合存一些轻量的数据，如当前版本（可用来做检测更新以及展示欢迎页或其他逻辑）。建议使用 CoreData 或其他数据存储方式。
+```
+
+
+4.钥匙串存储
+```
+iOS的keychain服务提供了一种安全的保存私密信息（密码，序列号，证书等）的方式，每个ios程序都有一个独立的keychain存储。相对于NSUserDefaults、文件保存等一般方式，keychain保存更为安全，而且keychain里保存的信息不会因App被删除而丢失，所以在重装App后，keychain里的数据还能使用。从ios 3.0开始，跨程序分享keychain变得可行。
+
+```
+
+
+
+
+5.Vue怎么做页面数据刷新 
+
+
+6.GCD与NSThread的区别
+```
+NSThread 比GCD轻量级，需要自己管理线程的生命周期，线程同步。线程同步对数据的加锁会有一定的系统开销
+
+在指定线程上执行操作：
+
+[self performSelector:@selector(run) onThread:thread withObject:nil waitUntilDone:YES];  
+
+
+在主线程上执行操作：
+
+[self performSelectorOnMainThread:@selector(run) withObject:nil waitUntilDone:YES];  
+
+```
+
+```
+首先GCD的全称是Grand Central Dispatch，是Apple的libdispatch库的一个名称，使用GCD可以达到很多你所需要的结果，因为GCD本身是苹果公司为多核的并行运算提出的解决方案，它是基于C语言的，完全由系统来管理线程，我们不需要去编写线程代码，只用定义想执行的任务，而且能够提供给我们更大的控制力和大量的底层函数，可以极为简单的在不同代码之间传递上下文，减少上下文的切换，提高系统资源利用效率，减轻系统的负载
+```
+
+7.Block 有哪几种类型
+```
+全局Block(_NSConcreteGlobalBlock)、栈Block(_NSConcreteStackBlock)、堆Block(_NSConcreteMallocBlock)三种形式
+其中栈Block存储在栈(stack)区，堆Block存储在堆(heap)区，全局Block存储在已初始化数据(.data)区
+
+
+__NSGlobalBlock：没有访问外部auto变量，如果访问了外部static或者全局变量也是这种类型
+__NSStackBlock：访问了外部auto变量
+__NSMallocBlock:__NSStackBlock类型调用了copy方法
+```
+
+
+
+8.ios对象分配内存
+
+![image.png](https://upload-images.jianshu.io/upload_images/2631509-0aae7a76fe8816f8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+9.SDWebImage 几级缓存
+```
+二级缓存
+首先会去内存缓存中取，如果内存缓存中存在，就取出来直接设置
+如果内存缓存中没有，就去磁盘缓存里取，如果磁盘缓存里有，就取出来设置，并且保存一份到内存缓存中
+如果内存缓存和磁盘缓存中都没有，说明所有缓存都不存在该图片，这时候就需要去下载
+下载之前会先查看这时候有没有此图片的下载的操作，如果有就等待下载完毕，如果没有就需要下载
+，由于下载图片属于耗时操作，因此会开启子线程来下载，在图片下载完成显示之前会显示一张占位图片
+在图片下载完成之后会显示图片，并且将下载的图片分别保存到内存缓存和磁盘缓存中去
+SDImageCache在初始化的时候会注册一些消息通知，在收到内存警告或者退到后台的时候清理内存图片缓存，应用结束的时候清理过期的图片
+```
+
+
+
+10.swift对比OC的优缺点
+```
+我们不得不承认的是swift语言比OC精简，整个项目中丢掉了头文件，以及头文件的引入。
+
+定义变量不用区分整型，浮点型等等，变量使用var，常量使用let。
+
+Swift 语言本身提供了对函数式编程的支持；
+
+Objc 本身是不支持的，通过引入 ReactiveCocoa 这个库才可支持函数式编程。
+
+缺点:2、Swift暂时还不稳定：
+
+
+```
+
+
+
+11.Method   IMP   @SELECTOR的关系
+```
+在 Objective-C 中，selector，Method 和 implementation(IMP) 都是 Runtime 的组成部分。在实际开发中它们常常是可以相互转换来处理消息的发送的。
+
+
+Selector（SEL : 类成员方法的指针，但不同于C语言中的函数指针，函数指针直接保存了方法的地址，但SEL只是方法编号。）
+
+定义：typedef struct objc_selector *SEL
+
+翻译成中文叫做选择子或者选择器，选择子代表方法在 Runtime 期间的标识符。为 SEL 类型，虽然 SEL 是 objc_selector 结构体指针，但实际上它只是一个 C 字符串。在类加载的时候，编译器会生成与方法相对应的选择子，并注册到 Objective-C 的 Runtime 运行系统。
+
+
+Implementation(IMP):
+
+定义：typedef id (*IMP)(id, SEL, ...)
+
+代表函数指针，即函数执行的入口。该函数使用标准的 C 调用。第一个参数指向 self（它代表当前类实例的地址，如果是类则指向的是它的元类），作为消息的接受者；第二个参数代表方法的选择子；... 代表可选参数，前面的 id 代表返回值。
+
+
+
+Method
+
+定义：typedef struct objc_method *Method
+
+Method 对开发者来说是一种不透明的类型，被隐藏在我们平时书写的类或对象的方法背后。它是一个 objc_method 结构体指针，objc_method 的定义为：
+
+/// Method
+struct objc_method {
+    SEL method_name; 
+    char *method_types;
+    IMP method_imp;
+};
+方法名 method_name 类型为 SEL，前面提到过相同名字的方法即使在不同类中定义，它们的方法选择器也相同。
+方法类型 method_types 是个 char 指针，其实存储着方法的参数类型和返回值类型，即是 Type Encoding 编码。
+method_imp 指向方法的实现，本质上是一个函数的指针，就是前面讲到的 Implementation。
+Selector，Method，IMP 它们之间的关系可以这么解释：
+一个类（Class）持有一个分发表，在运行期分发消息，表中的每一个实体代表一个方法（Method），它的名字叫做选择子（SEL），对应着一种方法实现（IMP）。
+
+
+
+```
+
+12.方法交换的本质
+```
+对应好文（http://www.cocoachina.com/articles/15076）
+Method Swizzling原理
+
+每个类都维护一个方法（Method）列表，Method则包含SEL和其对应IMP的信息，方法交换做的事情就是把SEL和IMP的对应关系断开，并和新的IMP生成对应关系。
+
+交换前：Asel－>AImp Bsel－>BImp
+交换后：Asel－>BImp Bsel－>AImp
+```
+
+
+13.动态库，静态库
+
+```
+iOS开发中静态库和动态库区别:
+静态库和动态库是相对编译期和运行期的：静态库在程序编译时会被链接到目标代码中，程序运行时将不再需要改静态库；而动态库在程序编译时并不会被链接到目标代码中，只是在程序运行时才被载入，因为在程序运行期间还需要动态库的存在。
+
+静态库：以.a 和 .framework为文件后缀名。
+
+动态库：以.tbd(之前叫.dylib) 和 .framework 为文件后缀名。（系统直接提供给我们的framework都是动态库！）
+
+静态库和动态库的区别
+静态库:链接时会被完整的复制到可执行文件中，所以如果两个程序都用了某个静态库，那么每个二进制可执行文件里面其实都含有这份静态库的代码。
+动态库: 链接时不复制，在程序启动后用动态加载，然后再决议符号，所以理论上动态库只用存在一份，好多个程序都可以动态链接到这个动态库上面，达到了节省内存(不是磁盘是内存中只有一份动态库)，还有另外一个好处，由于动态库并不绑定到可执行程序上，所以我们想升级这个动态库就很容易，windows和linux上面一般插件和模块机制都是这样实现的。
+```
+![截屏2020-09-13 下午8.23.35.png](https://upload-images.jianshu.io/upload_images/2631509-131304c47d8dbd88.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+
+```
+
+```
+
+14.内联函数
+
+```
+在iOS中的一些框架中,static inline是经常出现的关键字组合.
+
+static自不用多说,表示在当前文件中应用,如 static A, 在其它文件中也可以出现static A.不会导致重名的错误.
+
+inline.内联函数.
+作用:替代宏**.
+在框架中出现inline时,如YYKit框架.我们稍加观察就会发现它出现在.h文件中. such as:
+
+static inline CGFloat CGFloatFromPixel(CGFloat value) {
+    return value / YYScreenScale();
+}
+CGFloat YYScreenScale() {
+    static CGFloat scale;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        scale = [UIScreen mainScreen].scale;
+    });
+    return scale;
+}
+
+inline函数避免了普通函数的,在汇编时必须调用call的缺点:取消了函数的参数压栈，减少了调用的开销,提高效率.所以执行速度确比一般函数的执行速度要快.
+集成了宏的优点,使用时直接用代码替换(像宏一样);
+```
+
+
+
+15.不同的静态库中间的gcd冲突怎么办。
+```
+如果在项目中加入多个第三方库后出现类似下面的问题（XXX.o重复定义）：
+
+duplicate symbol _OBJC_CLASS_$_EAGLView in:
+/Users/XXXname/Library/Developer/Xcode/DerivedData/XXObjext-gcnzomsbbunnlyfihyndulghsulr/Build/Products/Debug-iphonesimulator/libXXX.a(EAGLView.o)
+/Applications/Xcode.app/Contents/Developer/Library/Frameworks/NChart3D.framework/NChart3D(EAGLView.o)
+ld: 2 duplicate symbols for architecture i386
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+我们可以把其中一个.a中的.o删除掉来解决这一问题，解决方法步骤：
+
+把一个.a命名为libx.a，在终端中cd到.a所属文件夹下，输入命令来查看包（.a）信息：lipo -info libx.a
+如果提示fat file，那么代表这个包是支持多平台的，例如armv7，armv7s，i386等，这需要我们逐一做解包重打包操作。否则我们只需要做一次[1-6]操作即可。
+
+1、创建临时文件夹，用于存放armv7平台解压后的.o文件：mkdir armv7
+2、从.a中取出armv7平台的包：lipo libx.a -thin armv7 -output armv7/libx-armv7.a
+3、查看armv7平台的包中所包含的文件列表：ar -t armv7/libx-armv7.a
+4、从armv7平台的包中解压出object file（即.o后缀文件）：cd armv7 && ar xv libx-armv7.a
+5、找到冲突的包（EAGLView），删除掉rm EAGLView.o
+6、重新打包object file（armv7平台包）：cd .. && ar rcs libx-armv7.a armv7/*.o，可以再次使用[2]中命令确认是否已成功将文件去除
+7、将其他几个平台(armv7s, i386)包逐一做上述[1-6]操作
+8、重新合并为fat file的.a文件（去掉重复.o的）：lipo -create libx-armv7.a libx-armv7s.a libx-i386.a -output libMiPushSDK-new.a
+9、拷贝到项目中覆盖原来的.a文件就可以了。
+
+我的问题虽然只有在i386下重复定义，但我还是把armv7和arm64下的也删除掉了。
+```
+
+
+16.项目如何优化，有哪些优化点
+
+
+
+17.Coretext
+
+
+
+18.KVO如何实现的
+
+
+
+19.Wkwebview  cookie在哪个版本同步
+
+```
+ios11后iOS开放了WKHTTPCookieStore让开发者去同步cookie
+
+/**
+ 从WKHTTPCookieStore同步Cookie到[NSHTTPCookieStorage sharedHTTPCookieStorage]
+ */
++ (void)cookiesDidChangeInCookieStore:(WKHTTPCookieStore *)cookieStore NS_AVAILABLE_IOS(11_0)
+{
+    GCD_MAIN(^{
+        [cookieStore getAllCookies:^(NSArray<NSHTTPCookie *> * _Nonnull cookies) {
+            NSSet *before = [NSSet setWithArray:[NSHTTPCookieStorage sharedHTTPCookieStorage].cookies];
+            NSMutableSet *after = [NSMutableSet setWithArray:cookies];
+            //需要保留的
+            NSMutableSet *toKeep = [NSMutableSet setWithSet:before];
+            [toKeep intersectSet:after];
+            //需要添加的
+            NSMutableSet *toAdd = [NSMutableSet setWithSet:after];
+            [toAdd minusSet:toKeep];
+            for (NSHTTPCookie *cookie in toAdd.allObjects) {
+                [[NSHTTPCookieStorage sharedHTTPCookieStorage] setCookie:cookie];
+            }
+        }];
+    });
+}
+/**
+ 从[NSHTTPCookieStorage sharedHTTPCookieStorage]同步Cookie到WKHTTPCookieStore
+ */
++ (void)cookiesDidChangeInHTTPCookieStorage:(NSNotification *)notification
+{
+    if (@available(iOS 11.0, *)) {
+        [self synchronizeCookiesFromNSHTTPCookieStorage];
+    }
+}
+
+```
+
+
+20.基类有哪些
+```
+Cocoa提供了两个根类：NSObject和NSProxy。Cocoa将后者定义为抽象类，用于表示其它对象的替身对象。因此NSProxy类在分布式对象架构中是很重要的。由于作用比较特别，NSProxy在Cocoa程序中出现频率很低。Cocoa开发者在提到根类时，几乎总是指NSObject。
+
+
+```
+
+
+21.Xcode检测项目，用了哪些功能呢。
+
+
+
+22.Cocoapod修改里面的库代码，怎么兼容其他人呢
+
+
+23.Cocoapod私有库如何添加
+可参考文章http://www.cocoachina.com/cms/wap.php?action=article&id=24857
+
+
+24.Http code状态码有哪些
+```
+2开头 （请求成功）表示成功处理了请求的状态代码。
+200   （成功）  服务器已成功处理了请求。 通常，这表示服务器提供了请求的网页。 
+3开头 （请求被重定向）表示要完成请求，需要进一步操作。 通常，这些状态代码用来重定向。
+401   （未授权） 请求要求身份验证。 对于需要登录的网页，服务器可能返回此响应。 
+403   （禁止） 服务器拒绝请求。
+404   （未找到） 服务器找不到请求的网页。
+
+5开头（服务器错误）这些状态代码表示服务器在尝试处理请求时发生内部错误。 这些错误可能是服务器本身的错误，而不是请求出错。
+
+500   （服务器内部错误）  服务器遇到错误，无法完成请求。 
+501   （尚未实施） 服务器不具备完成请求的功能。 例如，服务器无法识别请求方法时可能会返回此代码。 
+502   （错误网关） 服务器作为网关或代理，从上游服务器收到无效响应。 
+503   （服务不可用） 服务器目前无法使用（由于超载或停机维护）。 通常，这只是暂时状态。 
+504   （网关超时）  服务器作为网关或代理，但是没有及时从上游服务器收到请求。 
+505   （HTTP 版本不受支持） 服务器不支持请求中所用的 HTTP 协议版本。
+```
+
+
+25.项目上线的话，怎么监测项目的异常
+```
+1.  比如可以在程序下一次起来的时候读取这个异常文件发生到服务端。
+
+2. 或者直接就是在处理代码中用openurl的方式(mailto:)调用发送邮件的方式，将异常信息直接变成邮件发送到指定地址。
+
+
+void UncaughtExceptionHandler(NSException *exception) {
+     NSArray *arr = [exception callStackSymbols];
+     NSString *reason = [exception reason];
+     NSString *name = [exception name];
+ 
+     NSString *url = [NSString stringWithFormat:@"=============异常崩溃报告=============\nname:\n%@\nreason:\n%@\ncallStackSymbols:\n%@",
+                   name,reason,[arr componentsJoinedByString:@"\n"]];
+     NSString *path = [applicationDocumentsDirectory() stringByAppendingPathComponent:@"Exception.txt"];
+     [url writeToFile:path atomically:YES encoding:NSUTF8StringEncoding error:nil];
+     //除了可以选择写到应用下的某个文件，通过后续处理将信息发送到服务器等
+     //还可以选择调用发送邮件的的程序，发送信息到指定的邮件地址
+     //或者调用某个处理程序来处理这个信息
+}
+```
+
+
+重点研究APP有哪些性能优化的方案，Xcode自带的性能检测，WK cookie问题
+
+iOS 性能优化的小知识点
+尽可能使用懒加载view，使用到对应的视图的时候才去创建，
+
+减少程序启动过程中的任务
+
+避免过于庞大的XIB
+
+Core Graphics重新绘制带圆角的视图
+```
+@implementation UIImage (CircleImage)
+
+- (UIImage *)drawCircleImage {
+   UIGraphicsBeginImageContextWithOptions(self.bounds.size, NO, [UIScreen mainScreen].scale); 
+   [[UIBezierPath bezierPathWithRoundedRect:self.bounds cornerRadius:50] addClip]; 
+   [self drawInRect:self.bounds]; 
+
+   UIImage *output = UIGraphicsGetImageFromCurrentImageContext();
+   UIGraphicsEndImageContext();
+   return output; 
+}
+ @end
+//在需要圆角时调用如下
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    UIImage *img = [[UIImage imageNamed:@"image.png"] drawCircleImage];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        imageView.image = img;
+    });
+});
+```
+
+```
+文本计算
+如果一个界面中包含大量文本（比如微博微信朋友圈等），文本的宽高计算会占用很大一部分资源，并且不可避免。如果你对文本显示没有特殊要求，可以参考下 UILabel 内部的实现方式：用 [NSAttributedString boundingRectWithSize:options:context:] 来计算文本宽高，用 -[NSAttributedString drawWithRect:options:context:] 来绘制文本。尽管这两个方法性能不错，但仍旧需要放到后台线程进行以避免阻塞主线程。
+```
+```
+视图布局的计算是 App 中最为常见的消耗 CPU 资源的地方。如果能在后台线程提前计算好视图布局、并且对视图布局进行缓存，那么这个地方基本就不会产生性能问题了。
+```
+
+按需加载，渲染  圆角问题 透明度问题 XIB问题
+
+
+
+//搭建一个高性能的APP框架
+
+设计到行高缓存，绘制圆角，绘制头像图片，
+APP启动时 如何延时加载UItabbarcontroller。列表按需加载。
+不需要交互的控件，类似label可以考虑绘制上去。
+
+异步绘制UI的任务
+
+
+单例什么时候不安全
+
+
+
+NSTimer内存泄漏的解决方案
+
+```
+@interface NSTimer (eocBlockSupports)<br>//类方法返回一个NSTimer的实例对象
++(NSTimer *)eocScheduledTimerWithTimeInterval:(NSTimeInterval)timeInterval block:(void(^)()) block repeats:(BOOL)repeat;
+@end
+ 
+ 
+//
+//  NSTimer+eocBlockSupports.m
+ 
+ 
+#import "NSTimer+eocBlockSupports.h"
+ 
+@implementation NSTimer (eocBlockSupports)
++(NSTimer *)eocScheduledTimerWithTimeInterval:(NSTimeInterval)timeInterval block:(void(^)()) block repeats:(BOOL)repeat{
+    return  [self scheduledTimerWithTimeInterval:timeInterval target:self selector:@selector(startTimer:) userInfo:[block copy] repeats:repeat];
+}
+//定时器所执行的方法
++(void)startTimer:(NSTimer *)timer{
+    void(^block)() = timer.userInfo;
+    if (block) {
+        block();
+    }
+     
+}
+
+
+ NSTimer的分类创建完成后，创建定时的代码如下：一定要弱化self否则还是无法解决循环引用的问题。
+
+   __weak typeof(self)weakSelf = self;
+
+    self.timer = [NSTimer eocScheduledTimerWithTimeInterval:1.0 block:^{
+
+        [weakSelf startTimer];
+
+    } repeats:YES];
+
+
+```
+0ff00
+ 0100
